@@ -36,26 +36,29 @@ node
 3: Copy and paste your code into your node session
 4: Instantiate blockchain with blockchain variable
 ```
-let blockchain = new Blockchain();
+const BlockChain = require('./BlockChain.js');
+const Block = require('./Block.js');
+let myBlockChain = new BlockChain.Blockchain();
 ```
 5: Generate 10 blocks using a for loop
 ```
-for (var i = 0; i <= 10; i++) {
-  blockchain.addBlock(new Block("test data "+i));
-}
+(function theLoop (i) {
+  setTimeout(function () {
+    let blockTest = new Block.Block("Test Block - " + (i + 1));
+    myBlockChain.addBlock(blockTest).then((result) => {
+      i++;
+      if (i < 10) theLoop(i);
+    });
+  }, 1000);
+})(0);
 ```
 6: Validate blockchain
 ```
 blockchain.validateChain();
 ```
-7: Induce errors by changing block data
+7: Get height of the block chain
 ```
-let inducedErrorBlocks = [2,4,7];
-for (var i = 0; i < inducedErrorBlocks.length; i++) {
-  blockchain.chain[inducedErrorBlocks[i]].data='induced chain error';
-}
-```
-8: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
-```
-blockchain.validateChain();
+myBlockChain.getBlockHeight().then((height) => {
+  console.log(height);
+}).catch((err) => { console.log(err);});
 ```

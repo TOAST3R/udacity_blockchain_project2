@@ -2,14 +2,9 @@
 |  Use this file to test your project.
 |  =========================================================*/
 
-myBlockChain.getChain()
-myBlockChain.getBlockHeight()
-myBlockChain.addBlock(new Block.Block("Test Block - 40"))
-
 const BlockChain = require('./BlockChain.js');
 const Block = require('./Block.js');
 let myBlockChain = new BlockChain.Blockchain();
-myBlockChain.validateChain()
 
 /******************************************
  ** Function for Create Tests Blocks   ****
@@ -19,7 +14,6 @@ myBlockChain.validateChain()
 (function theLoop (i) {
   setTimeout(function () {
     let blockTest = new Block.Block("Test Block - " + (i + 1));
-    // Be careful this only will work if your method 'addBlock' in the Blockchain.js file return a Promise
     myBlockChain.addBlock(blockTest).then((result) => {
       i++;
       if (i < 10) theLoop(i);
