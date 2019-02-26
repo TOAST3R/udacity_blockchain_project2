@@ -10,42 +10,54 @@ class Blockchain {
 
     constructor() {
         this.bd = new LevelSandbox.LevelSandbox();
-        this.generateGenesisBlock();
-    }
-
-    // Helper method to create a Genesis Block (always with height= 0)
-    // You have to options, because the method will always execute when you create your blockchain
-    // you will need to set this up statically or instead you can verify if the height !== 0 then you
-    // will not create the genesis block
-    generateGenesisBlock(){
-        this.chain = [];
-        this.addBlock(new Block.Block("First block in the chain - Genesis block"));
     }
 
     // Get block height, it is a helper method that return the height of the blockchain
+    // in a promise
     getBlockHeight() {
         let self = this;
         return new Promise(function(resolve, reject){
-            resolve(self.chain.length-1);
-        }).catch((err) => { console.log(err); reject(err)});
+            self.getChain().then((blocks) => {
+                console.log(blocks.length);
+                resolve(blocks.length);
+            }).catch((err) => { console.log(err); reject(err)});
+        })
+    }
+
+    // get Chain, it returns all the blocks of the chain in a promise
+    getChain(){
+        let self = this;
+        return new Promise(function(resolve, reject){
+            self.bd.getBlocks().then((blocks) => {
+                //console.log(blocks);
+                resolve(blocks);
+            }).catch((err) => { console.log(err); reject(err)});
+        })
     }
 
     // Add new block
     addBlock(newBlock){
-        newBlock.height = this.chain.length;
-        // this.getBlockHeight().then((height) => {
-        //     newBlock.height = height + 1;
-        // });
-        newBlock.time = new Date().getTime().toString().slice(0,-3);
-        if(this.chain.length>0){
-            newBlock.previousBlockHash = this.chain[this.chain.length-1].hash;
-        }
-        newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-        this.chain.push(newBlock);
         let self = this;
-        return new Promise(function(resolve, reject){
-            resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
-        }).catch((err) => { console.log(err); reject(err)});
+        return new Promise((resolve, reject) => {
+            this.getBlockHeight().then((height) => {
+                newBlock.height = height;
+                newBlock.time = new Date().getTime().toString().slice(0,-3);
+                if(height > 0){
+                    self.getBlock(height-1).then((block) => {
+                        //let blockAux = JSON.parse(block);
+                        newBlock.previousBlockHash = block.hash;
+                        newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+                        resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
+                    });
+
+                } else {
+                    newBlock.body = "First block in the chain - Genesis block";
+                    newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+                };
+                resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
+            })
+        })
+
     }
 
     // Get Block By Height
@@ -55,7 +67,7 @@ class Blockchain {
             self.bd.db.get(height, function(err, value) {
                 if (err) { console.log("Block " + height + " is not on the chain"); reject(err); }
                 console.log("Get block return:", value);
-                resolve(value);
+                resolve(JSON.parse(value));
             });
         })
     }
@@ -63,10 +75,10 @@ class Blockchain {
     // Validate if Block is being tampered by Block Height
     validateBlock(blockHeight){
         let valid = this.getBlock(blockHeight).then((block) => {
-            let blockAux = JSON.parse(block);
-            let blockHash = blockAux.hash;
-            blockAux.hash = '';
-            let validBlockHash = SHA256(JSON.stringify(blockAux)).toString();
+            //let blockAux = JSON.parse(block);
+            let blockHash = block.hash;
+            block.hash = '';
+            let validBlockHash = SHA256(JSON.stringify(block)).toString();
 
             if (validBlockHash === blockHash) {
               console.log('Block #'+blockHeight+' Valid Hash:\n'+blockHash+'==='+validBlockHash);
@@ -85,6 +97,9 @@ class Blockchain {
     // Validate Blockchain
     validateChain() {
         let errorLog = [];
+        // this.getChain().then((block) => {
+
+        // })
         for (var i = 0; i < this.chain.length-1; i++) {
             let validate = this.validateBlock(i).then((valid) => {
                 return valid;

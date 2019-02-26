@@ -20,17 +20,25 @@ class LevelSandbox {
     addLevelDBData(key, value) {
       let self = this;
       return new Promise( (resolve, reject) => {
-        this.db.put(key, value);
-        resolve(self.db.get(key));
+        resolve(self.db.put(key, value));
       }).catch((err) => { console.log(err); reject(err)});
-
     }
 
     // Method that return the height
-    getBlocksCount() {
+    getBlocks() {
         let self = this;
+        let dataArray = [];
         return new Promise(function(resolve, reject){
-            // Add your code here, remember in Promises you need to resolve() or reject()
+            self.db.createReadStream()
+            .on('data', function (data) {
+                dataArray.push(data);
+            })
+            .on('error', function (err) {
+                reject(err)
+            })
+            .on('close', function () {
+                resolve(dataArray);
+            });
         });
     }
 

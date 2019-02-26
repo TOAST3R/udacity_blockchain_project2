@@ -2,6 +2,9 @@
 |  Use this file to test your project.
 |  =========================================================*/
 
+myBlockChain.getChain()
+myBlockChain.getBlockHeight()
+
 const BlockChain = require('./BlockChain.js');
 const Block = require('./Block.js');
 
@@ -21,7 +24,7 @@ let myBlockChain = new BlockChain.Blockchain();
       i++;
       if (i < 10) theLoop(i);
     });
-  }, 100);
+  }, 1000);
   })(0);
 
 /***********************************************
@@ -106,3 +109,17 @@ myBlockChain.validateChain().then((errorLog) => {
   console.log(error);
 })
 */
+
+
+// devolver valor:
+return new Promise(function(resolve, reject){
+    resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
+})
+
+// devolver promesa:
+return new Promise((resolve, reject) => {
+    self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()).then(() => {
+        resolve();
+    });
+})
+
