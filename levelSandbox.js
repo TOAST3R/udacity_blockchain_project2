@@ -11,11 +11,6 @@ class LevelSandbox {
       this.db = level(chainDB);
     }
 
-    // Get data from levelDB with key (Promise)
-    getLevelDBData(key){
-      this.db.get(key);
-    }
-
     // Add data to levelDB with key and value (Promise)
     addLevelDBData(key, value) {
       let self = this;

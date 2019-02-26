@@ -44,7 +44,6 @@ class Blockchain {
                 newBlock.time = new Date().getTime().toString().slice(0,-3);
                 if(height > 0){
                     self.getBlock(height-1).then((block) => {
-                        //let blockAux = JSON.parse(block);
                         newBlock.previousBlockHash = block.hash;
                         newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
                         resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
@@ -53,8 +52,9 @@ class Blockchain {
                 } else {
                     newBlock.body = "First block in the chain - Genesis block";
                     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+                    resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
                 };
-                resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
+
             })
         })
 
@@ -65,23 +65,28 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
             self.bd.db.get(height, function(err, value) {
-                if (err) { console.log("Block " + height + " is not on the chain"); reject(err); }
-                console.log("Get block return:", value);
-                resolve(JSON.parse(value));
+                if (err) {
+                    console.log("Block " + height + " is not on the chain");
+                    reject(err); }
+                else {
+                    //console.log("Get block return:", value);
+                    resolve(JSON.parse(value));
+                };
             });
-        })
+        });
     }
 
     // Validate if Block is being tampered by Block Height
     validateBlock(blockHeight){
+        console.log("validateBlock");
+        console.log(blockHeight);
         let valid = this.getBlock(blockHeight).then((block) => {
-            //let blockAux = JSON.parse(block);
             let blockHash = block.hash;
             block.hash = '';
             let validBlockHash = SHA256(JSON.stringify(block)).toString();
 
             if (validBlockHash === blockHash) {
-              console.log('Block #'+blockHeight+' Valid Hash:\n'+blockHash+'==='+validBlockHash);
+              //console.log('Block #'+blockHeight+' Valid Hash:\n'+blockHash+'==='+validBlockHash);
               return true;
             } else {
               console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
@@ -93,35 +98,55 @@ class Blockchain {
         });
     }
 
-
-    // Validate Blockchain
+    // Validate all blocks in the Blockchain, we validate if the hash is valid
+    // recreating it and if the previousHash is valid comparing it with the previous hash
     validateChain() {
-        let errorLog = [];
-        // this.getChain().then((block) => {
+        let self = this;
+        let promises = [];
 
-        // })
-        for (var i = 0; i < this.chain.length-1; i++) {
-            let validate = this.validateBlock(i).then((valid) => {
-                return valid;
+        this.getBlockHeight().then((height) => {
+            // loop to go for all the blocks of the blockchain
+            for (let i = 0; i < height-1; i++) {
+                self.getBlock(i).then((block) => {
+                    let height = block.height;
+                    promises.push(new Promise((resolve, reject) => {
+                        // validate the hash of the block
+                        self.validateBlock(height).then((valid) => {
+                            if(!valid){
+                                resolve(i);
+                            } else {
+                                resolve(null);
+                            }
+                        });
+                    }));
+                    if(i>0){
+                        promises.push(new Promise((resolve, reject) => {
+                            // validate previousHash of the block
+                            self.getBlock(i-1).then((previousBlock) => {
+                                if(previousBlock.hash !== block.previousBlockHash){
+                                    resolve(i);
+                                } else {
+                                    resolve(null);
+                                }
+                            });
+                        }));
+                    }
+                });
+            }
+            Promise.all(promises).then(data => {
+                return new Promise( (resolve, reject) => {
+                    console.log("jefe finallll");
+                    if (data.length>0) {
+                        console.log('Block errors = ' + errorLog.length);
+                        resolve('Blocks: '+errorLog);
+                    } else {
+                        console.log('No errors detected');
+                        resolve('No errors detected');
+                    }
+
+                });
             });
-            if(!validate){
-                errorLog.push(i);
-            }
-            let blockHash = this.chain[i].hash;
-            let previousHash = this.chain[i+1].previousBlockHash;
-            if (blockHash!==previousHash) {
-              errorLog.push(i);
-            }
-        }
-        if (errorLog.length>0) {
-            console.log('Block errors = ' + errorLog.length);
-            console.log('Blocks: '+errorLog);
-        } else {
-            console.log('No errors detected');
-        }
-        return new Promise((resolve, reject) => {
-            resolve(errorLog);
-        });
+        })
     }
 
     // Utility Method to Tamper a Block for Test Validation

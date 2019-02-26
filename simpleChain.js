@@ -4,11 +4,12 @@
 
 myBlockChain.getChain()
 myBlockChain.getBlockHeight()
+myBlockChain.addBlock(new Block.Block("Test Block - 40"))
 
 const BlockChain = require('./BlockChain.js');
 const Block = require('./Block.js');
-
 let myBlockChain = new BlockChain.Blockchain();
+myBlockChain.validateChain()
 
 /******************************************
  ** Function for Create Tests Blocks   ****
@@ -20,7 +21,6 @@ let myBlockChain = new BlockChain.Blockchain();
     let blockTest = new Block.Block("Test Block - " + (i + 1));
     // Be careful this only will work if your method 'addBlock' in the Blockchain.js file return a Promise
     myBlockChain.addBlock(blockTest).then((result) => {
-      console.log(result);
       i++;
       if (i < 10) theLoop(i);
     });
@@ -45,7 +45,7 @@ myBlockChain.getBlockHeight().then((height) => {
 
 /*
 // Be careful this only will work if `getBlock` method in Blockchain.js file return a Promise
-myBlockChain.getBlock(0).then((block) => {
+myBlockChain.getBlock(10).then((block) => {
   console.log(JSON.stringify(block));
 }).catch((err) => { console.log(err);});
 *?
@@ -109,17 +109,3 @@ myBlockChain.validateChain().then((errorLog) => {
   console.log(error);
 })
 */
-
-
-// devolver valor:
-return new Promise(function(resolve, reject){
-    resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
-})
-
-// devolver promesa:
-return new Promise((resolve, reject) => {
-    self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()).then(() => {
-        resolve();
-    });
-})
-
