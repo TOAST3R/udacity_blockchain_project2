@@ -62,3 +62,13 @@ myBlockChain.getBlockHeight().then((height) => {
   console.log(height);
 }).catch((err) => { console.log(err);});
 ```
+8: Get a block
+```
+GET http://localhost:8000/block/{blockHeight}
+```
+9: Post a block
+```
+POST http://localhost:8000/block
+with: { body: "data" }
+```
+

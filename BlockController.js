@@ -41,17 +41,22 @@ class BlockController {
      * Implement a POST Endpoint to add a new Block, url: "/api/block"
      */
     postNewBlock() {
-        this.app.post("/api/block", (req, res) => {
+        this.app.post("/block", (req, res) => {
             let block = new BlockClass.Block(req.body.body);
-            let myBlockChain = new BlockChain.Blockchain();
+            if (block !== null) {
+                let myBlockChain = new BlockChain.Blockchain();
 
-            return myBlockChain.addBlock(block).then((result) => {
-              return result;
-            }).then(function(result) {
-		        res.status(200).send("OK");
-		    }).catch(function (e) {
-		        res.status(500).send("KO");
-		    });
+	            return myBlockChain.addBlock(block).then((result) => {
+	              return result;
+	            }).then(function(result) {
+			        res.status(200).send(result);
+			    }).catch(function (e) {
+			        res.status(500).send(e);
+			    });
+            } else {
+            	res.status(500).send("Body is empty");
+            }
+
 		});
 	}
 }

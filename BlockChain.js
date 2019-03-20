@@ -46,13 +46,15 @@ class Blockchain {
                     self.getBlock(height-1).then((block) => {
                         newBlock.previousBlockHash = block.hash;
                         newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-                        resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
+                        self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString());
+                        resolve(self.getBlock(newBlock.height));
                     });
 
                 } else {
                     newBlock.body = "First block in the chain - Genesis block";
                     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-                    resolve(self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString()));
+                    self.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString());
+                    resolve(self.getBlock(newBlock.height));
                 };
 
             })
