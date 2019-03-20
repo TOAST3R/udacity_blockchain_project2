@@ -23,12 +23,12 @@ class BlockController {
      * Implement a GET Endpoint to retrieve a block by index, url: "/api/block/:index"
      */
     getBlockByIndex() {
-        this.app.get("/api/block/:index", (req, res) => {
-        	let height = req.params.index;
+        this.app.get("/block/:blockHeight", (req, res) => {
+            let height = req.params.blockHeight;
             let myBlockChain = new BlockChain.Blockchain();
 
             return myBlockChain.getBlock(height).then((block) => {
-              return JSON.stringify(block);
+              return block;
 			}).then(function(result) {
 		        res.status(200).send(result);
 		    }).catch(function (e) {
@@ -42,7 +42,7 @@ class BlockController {
      */
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
-            let block = new BlockClass.Block(req.body.data);
+            let block = new BlockClass.Block(req.body.body);
             let myBlockChain = new BlockChain.Blockchain();
 
             return myBlockChain.addBlock(block).then((result) => {
