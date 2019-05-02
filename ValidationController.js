@@ -1,5 +1,3 @@
-
-//helper libraries
 const bitcoin = require('bitcoinjs-lib');
 const bitcoinMessage = require('bitcoinjs-message');
 
@@ -15,7 +13,9 @@ class ValidationController {
     constructor(app) {
         this.app = app;
         this.walletAddressHash = {};
+        this.validatedRequests = [];
         this.requestValidation();
+        this.validateRequestByWallet();
     }
 
     requestValidation(){
@@ -37,20 +37,64 @@ class ValidationController {
               this.walletAddressHash[address] = requestTimeStamp;
               const timeSinceFirstRequest = currentTime - requestTimeStamp;
 
-              //set up return message
-              let message = `${address}:${requestTimeStamp}:starRegistry`;
-              const timeRemaining = validationWindow - timeSinceFirstRequest;
-
               return res.json({
                 "address": address,
                 "requestTimeStamp": requestTimeStamp,
-                "message": message,
-                "validationWindow": timeRemaining
+                "message": `${address}:${requestTimeStamp}:starRegistry`,
+                "validationWindow": validationWindow - timeSinceFirstRequest
               });
             } catch (err) {
-              res.status(500).send(err);
+              return res.status(500).send(err);
             }
         });
+    }
+
+    validateRequestByWallet(){
+        this.app.post("/message-signature/validate", (req, res) => {
+            try {
+              let address = req.body.address;
+              let signature = req.body.signature;
+
+              if (!address || !signature) {
+                return res.status(500).send('Wallet address is required');
+              }
+
+              const requestTimeStamp = this.walletAddressHash[address];
+              if (!requestTimeStamp) {
+                return res.status(400).send(`Unable to find address ${address}`);
+              }
+
+              //determine if request in validation window
+              const currentTime =  Math.round(new Date().getTime() / 1000);
+              const timeElapsed = currentTime - requestTimeStamp;
+              if (timeElapsed > validationWindow) {
+                delete this.walletAddressHash[address];  //remove expired request from hash
+                return res.status(400).send(`Request has expired for address ${address}`);
+              }
+
+              const validSignature = bitcoinMessage.verify(message, address, signature);
+
+              if (validSignature) {
+                this.validatedRequests.push(address);
+
+                return res.json({
+                    "registerStar": true,
+                    "status": {
+                      "address": address,
+                      "requestTimeStamp": requestTimeStamp,
+                      "message": `${address}:${requestTimeStamp}:starRegistry`,
+                      "validationWindow": validationWindow - timeElapsed,
+                      "messageSignature": true
+                    }
+                });
+              } else {
+                 console.log("invalid signature");
+                 return res.badRequest({err: `Invalid signature`});
+              }
+            } catch (err) {
+              return res.status(500).send(err);
+            }
+        })
     }
 
 }

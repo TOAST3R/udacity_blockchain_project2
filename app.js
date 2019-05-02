@@ -35,6 +35,7 @@ class BlockAPI {
     initControllers() {
         require("./BlockController.js")(this.app);
         require("./ValidationController.js")(this.app);
+        require("./StarsController.js")(this.app);
     }
 
     /**
