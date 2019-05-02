@@ -13,15 +13,10 @@ class BlockController {
      */
     constructor(app) {
         this.app = app;
-        // this.blocks = [];
-        // this.initializeMockData();
         this.getBlockByIndex();
         this.postNewBlock();
     }
 
-    /**
-     * Implement a GET Endpoint to retrieve a block by index, url: "/api/block/:index"
-     */
     getBlockByIndex() {
         this.app.get("/block/:blockHeight", (req, res) => {
             let height = req.params.blockHeight;
@@ -37,9 +32,6 @@ class BlockController {
 		});
     }
 
-    /**
-     * Implement a POST Endpoint to add a new Block, url: "/api/block"
-     */
     postNewBlock() {
         this.app.post("/block", (req, res) => {
             let block = new BlockClass.Block(req.body.body);
@@ -61,8 +53,4 @@ class BlockController {
 	}
 }
 
-/**
- * Exporting the BlockController class
- * @param {*} app
- */
-module.exports = (app) => { return new BlockController(app);}
+module.exports = (app) => { return new BlockController(app); }
