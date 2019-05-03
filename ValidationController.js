@@ -1,6 +1,7 @@
 const bitcoin = require('bitcoinjs-lib');
 const bitcoinMessage = require('bitcoinjs-message');
 
+const validationWindow = 300;
 /**
  * Controller Definition to encapsulate routes to work with blocks
  */
@@ -27,8 +28,6 @@ class ValidationController {
                 return res.status(500).send('Wallet address is required');
               }
 
-              //calculate validationWindow
-              const validationWindow = 300;
               let requestTimeStamp = this.walletAddressHash[address];
               if (!requestTimeStamp) {
                 requestTimeStamp = Math.round(new Date().getTime() / 1000)

@@ -72,11 +72,18 @@ POST http://localhost:8000/block
 with: { body: "data" }
 ```
 
-10: Validate User Request
+**Project 4**
+
+1: Blockchain ID validation routine
 
 This signature proves the users blockchain identity. Upon validation of this identity, the user should be granted access to register a single star.
 
-*Example: requestValidation endpoint*
+Use the URL for the endpoint: http://localhost:8000/requestValidation
+The request should contain:
+
+`{ "address":"19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL" }`
+
+Curl example
 
 ```
 curl -X "POST" "http://localhost:8000/requestValidation" \
@@ -84,7 +91,7 @@ curl -X "POST" "http://localhost:8000/requestValidation" \
      -d $'{ "address": "897BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"}'
 ```
 
-Response
+Example response
 ```
 {
   "address": "142BDCeSGbXjWKaAnYXbNpZ6sbrSAo3DpZ",
@@ -94,8 +101,34 @@ Response
 }
 ```
 
+Use the URL for the endpoint: http://localhost:8000/message-signature/validate
+The request should contain:
+```
+{
+"address":"19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL",
+ "signature":"H8K4+1MvyJo9tcr2YN2KejwvX1oqneyCH+fsUL1z1WBdWmswB9bijeFfOfMqK68kQ5RO6ZxhomoXQG3fkLaBl+Q="
+}
+```
+Verify that the time window of 5 minutes didn't expired.
 
-11: Create Star Endpoint
+The endpoint response should look like:
+```
+{
+    "registerStar": true,
+    "status": {
+        "address": "19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL",
+        "requestTimeStamp": "1544454641",
+        "message": "19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL:1544454641:starRegistry",
+        "validationWindow": 193,
+        "messageSignature": true
+    }
+}
+```
+
+Upon validation, the user is granted access to register a single star.
+
+
+2: Star registration Endpoint
 
 Configure the star registration endpoint. This will allow your application to accept users requests. In this section, we'll provide resources on how to do this effectively.
 
@@ -132,10 +165,89 @@ curl -X "POST" "http://localhost:8000/block" \
 }
 ```
 
-12: Search Star by Blockchain Wallet Address
+3: Star Lookup
 
-Example:  stars/address:[address] endpoint
+Use the URL: http://localhost:8000/stars/hash:[HASH]
+
+The response includes entire star block contents along with the addition of star story decoded to ASCII.
 
 ```
-curl "http://localhost:8000/stars/address:142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"
+{
+  "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
+  "height": 1,
+  "body": {
+    "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+    "star": {
+      "ra": "16h 29m 1.0s",
+      "dec": "-26° 29' 24.9",
+      "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f",
+      "storyDecoded": "Found star using https://www.google.com/sky/"
+    }
+  },
+  "time": "1532296234",
+  "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
+}
+```
+
+Use the URL: http://localhost:8000/stars/address:[ADDRESS]
+
+The response includes entire star block contents along with the addition of star story decoded to ASCII.
+
+This endpoint response contained a list of Stars because of one wallet address can be used to register multiple Stars.
+
+Response:
+```
+[
+  {
+    "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
+    "height": 1,
+    "body": {
+      "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+      "star": {
+        "ra": "16h 29m 1.0s",
+        "dec": "-26° 29' 24.9",
+        "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f",
+        "storyDecoded": "Found star using https://www.google.com/sky/"
+      }
+    },
+    "time": "1532296234",
+    "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
+  },
+  {
+    "hash": "6ef99fc533b9725bf194c18bdf79065d64a971fa41b25f098ff4dff29ee531d0",
+    "height": 2,
+    "body": {
+      "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+      "star": {
+        "ra": "17h 22m 13.1s",
+        "dec": "-27° 14' 8.2",
+        "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f",
+        "storyDecoded": "Found star using https://www.google.com/sky/"
+      }
+    },
+    "time": "1532330848",
+    "previousBlockHash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f"
+  }
+]
+```
+
+Use the URL: http://localhost:8000/block/[HEIGHT]
+
+The response includes entire star block contents along with the addition of star story decoded to ASCII.
+```
+{
+  "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
+  "height": 1,
+  "body": {
+    "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+    "star": {
+      "ra": "16h 29m 1.0s",
+      "dec": "-26° 29' 24.9",
+      "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f",
+      "storyDecoded": "Found star using https://www.google.com/sky/"
+    }
+  },
+  "time": "1532296234",
+  "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
+}
 ```
