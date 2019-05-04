@@ -71,6 +71,7 @@ class ValidationController {
                 return res.status(400).send(`Request has expired for address ${address}`);
               }
 
+              const message = `${address}:${requestTimeStamp}:starRegistry`;
               const validSignature = bitcoinMessage.verify(message, address, signature);
 
               if (validSignature) {
@@ -81,7 +82,7 @@ class ValidationController {
                     "status": {
                       "address": address,
                       "requestTimeStamp": requestTimeStamp,
-                      "message": `${address}:${requestTimeStamp}:starRegistry`,
+                      "message": message,
                       "validationWindow": validationWindow - timeElapsed,
                       "messageSignature": true
                     }
