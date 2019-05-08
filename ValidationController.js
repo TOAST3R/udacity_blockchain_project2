@@ -99,4 +99,13 @@ class ValidationController {
 
 }
 
-module.exports = (app) => { return new ValidationController(app); }
+let instance;
+module.exports = (app) => {
+    if(instance){
+        console.log("Return already created instance");
+        return instance;
+    }
+
+    console.log("Creating instance for the first time");
+    return new ValidationController(app);
+}
