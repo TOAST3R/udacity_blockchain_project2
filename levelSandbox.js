@@ -4,11 +4,15 @@
 
 const level = require('level');
 const chainDB = './chaindata';
+let dbInstance;
 
 class LevelSandbox {
 
     constructor() {
-      this.db = level(chainDB);
+      if(!dbInstance) {
+        dbInstance = level(chainDB);
+      }
+      this.db = dbInstance;
     }
 
     // Add data to levelDB with key and value (Promise)
