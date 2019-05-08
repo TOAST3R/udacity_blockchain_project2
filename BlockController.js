@@ -1,6 +1,7 @@
 const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./Block.js');
 const BlockChain = require('./BlockChain.js');
+const validationController = require("./ValidationController");
 
 /**
  * Controller Definition to encapsulate routes to work with blocks
@@ -13,7 +14,7 @@ class BlockController {
      */
     constructor(app) {
         this.app = app;
-        this.validatedRequests = this.validatedRequests || [];
+        this.validatedRequests = validationController(app).validatedRequests;
         this.getBlockByIndex();
         this.postNewBlock();
     }
@@ -60,7 +61,7 @@ class BlockController {
             star.story = Buffer.from(star.story).toString('hex')
             let myBlockChain = new BlockChain.Blockchain();
 
-            return myBlockChain.addBlock(new BlockClass.Block({ adress: adress, star: star })).then((block) => {
+            return myBlockChain.addBlock(new BlockClass.Block({ address: address, star: star })).then((block) => {
               this.validatedRequests = this.validatedRequests.filter(item => item !== address);
               console.log(this.validatedRequests);
 
