@@ -4,12 +4,18 @@
 
 const SHA256 = require('crypto-js/sha256');
 const LevelSandbox = require('./LevelSandbox.js');
-const Block = require('./Block.js');
+const BlockClass = require('./Block.js');
 
 class Blockchain {
 
     constructor() {
         this.bd = new LevelSandbox.LevelSandbox();
+        this.getBlockHeight().then((height) => {
+            if(height == -1){
+                this.addBlock(new BlockClass.Block({}));
+            }
+
+        })
     }
 
     // Get block height, it is a helper method that return the height of the blockchain
